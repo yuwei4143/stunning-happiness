@@ -26,8 +26,17 @@
 - 辨識端已標記 `需人工覆核=TRUE` 者，帶入原覆核原因。
 - **合併票**：同客戶同帳號多張票，實收加總與到期取捨請人工確認。
 - **金額勾稽**：票面與發票合計有差額（需比對主檔發票列）。
-- **客戶主檔未對應**：辨識客戶在主檔查無（發票人印章與客戶名不符、或主檔名稱不一致）。
+- **名稱差異（另行註記）**：辨識客戶在主檔查無時，以 `【名稱差異】` 專屬註記，
+  並彙整到 `output/名稱差異待建檔.xlsx`（去重）。確認簡稱/統編後填入
+  `data/customer_alias.csv`，往後同名稱自動解析、不再列入。
 - 銀行簡稱未建檔的機構。
+
+### 名稱差異建檔流程
+
+1. 執行 `python3 src/run_all.py`，查看 `output/名稱差異待建檔.xlsx`。
+2. 逐筆確認正確的「簡稱／統編」。
+3. 把辨識名稱、簡稱、統編填入 `data/customer_alias.csv`。
+4. 下次執行即自動對應，該名稱不再出現在名稱差異清單。
 
 ## 使用方式
 
@@ -51,7 +60,8 @@ python3 tests/verify_against_golden.py
 
 ```
 src/normalize.py            欄位標準化規則（銀行簡稱、帳號、日期、備註）
-src/customer_master.py      客戶主檔對照（全稱/統編 → 簡稱）
+src/customer_master.py      客戶主檔對照（全稱/統編 → 簡稱）＋名稱差異別名檔
+data/customer_alias.csv     名稱差異別名對照（使用者逐步建檔）
 src/payable_filler.py       核心：辨識紀錄 → 待回填明細；批次設定
 src/run_all.py              一鍵處理所有批次
 tests/verify_against_golden.py  對 11505_updated 逐欄驗證

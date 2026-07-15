@@ -3,6 +3,8 @@
 資料來源為會計系統匯出的「客戶資料明細表」(.xls, BIFF)。
 """
 from __future__ import annotations
+import csv
+import os
 import xlrd
 
 
@@ -13,11 +15,29 @@ def _tax_str(v) -> str:
 
 
 class CustomerMaster:
-    def __init__(self, path: str):
+    def __init__(self, path: str, alias_path: str | None = None):
         self.by_name: dict[str, tuple[str, str]] = {}   # 公司名稱 -> (簡稱, 統編)
         self.by_tax: dict[str, str] = {}                # 統編 -> 簡稱
         self.shorts: set[str] = set()
+        self.alias: dict[str, tuple[str, str]] = {}     # 辨識名稱 -> (簡稱, 統編)
         self._load(path)
+        if alias_path:
+            self._load_alias(alias_path)
+
+    def _load_alias(self, alias_path: str) -> None:
+        """載入名稱差異別名對照（CSV：辨識名稱,簡稱,統編）。
+
+        使用者把「名稱差異待建檔」清單確認後填入此檔，往後即自動解析。
+        """
+        if not os.path.exists(alias_path):
+            return
+        with open(alias_path, encoding="utf-8-sig", newline="") as f:
+            for row in csv.DictReader(f):
+                name = (row.get("辨識名稱") or "").strip()
+                short = (row.get("簡稱") or "").strip()
+                tax = _tax_str(row.get("統編") or "")
+                if name and (short or tax):
+                    self.alias[name] = (short, tax)
 
     def _load(self, path: str) -> None:
         wb = xlrd.open_workbook(path)
@@ -56,4 +76,8 @@ class CustomerMaster:
                 return short, t, True
             if nm in self.shorts:
                 return nm, None, True
+            # 名稱差異：先前已建檔的別名
+            if nm in self.alias:
+                short, t = self.alias[nm]
+                return (short or None), (t or None), True
         return None, (_tax_str(tax) if tax else None), False

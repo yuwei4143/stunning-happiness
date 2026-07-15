@@ -61,6 +61,7 @@ class FilledCheck:
     客戶: str = ""
     客戶簡稱: str = ""      # 由客戶主檔對應（明細表所用簡稱）
     統編: str | None = None
+    name_mismatch: bool = False   # 辨識客戶在主檔查無（名稱差異，另行註記）
     need_review: bool = False
     review_reasons: list[str] = field(default_factory=list)
 
@@ -146,7 +147,9 @@ def fill_record(rec: dict, batch: BatchSettings,
             out.客戶簡稱 = short or ""
             out.統編 = tax
         else:
-            out.flag(f"客戶主檔未對應（辨識客戶：{out.客戶}），簡稱/統編請人工確認")
+            out.name_mismatch = True
+            out.flag(f"【名稱差異】辨識客戶「{out.客戶}」主檔查無，"
+                     f"請建檔對照（簡稱/統編待補）")
 
     # 覆核旗標：辨識端已標記者一律帶入。
     if _to_bool(rec.get("需人工覆核")):
@@ -212,11 +215,14 @@ KNOWN_BATCHES: dict[str, BatchSettings] = {
 
 # 客戶主檔路徑（會計系統匯出的客戶資料明細表）。
 CUSTOMER_MASTER_PATH = "data/customer_master.xls"
+# 名稱差異別名對照（使用者建檔後往後自動解析）。
+CUSTOMER_ALIAS_PATH = "data/customer_alias.csv"
 
 
-def load_master(path: str = CUSTOMER_MASTER_PATH):
+def load_master(path: str = CUSTOMER_MASTER_PATH,
+                alias_path: str = CUSTOMER_ALIAS_PATH):
     try:
-        return CustomerMaster(path)
+        return CustomerMaster(path, alias_path=alias_path)
     except FileNotFoundError:
         return None
 
