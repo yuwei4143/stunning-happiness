@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧾</text></svg>">
+</head>
+<body>
+<title>應付帳款自動預填工具 — 圖文操作手冊</title>
+<style>
+  :root{
+    --paper:#F4F0E8; --surface:#FCFAF5; --surface-2:#EFE9DE; --surface-3:#E7E0D2;
+    --ink:#241E1C; --ink-soft:#574F49; --ink-faint:#8B8177;
+    --line:rgba(60,48,40,.14); --line-strong:rgba(60,48,40,.28);
+    --accent:#BE342A; --accent-2:#8A2822; --accent-soft:#F2DCD8;
+    --auto:#2E7B59; --auto-soft:#DBEAE1;
+    --review:#96640F; --review-soft:#F2E4C8;
+    --info:#2A5B87; --info-soft:#DCE8F2;
+    --code-bg:#2A2320; --code-ink:#ECE5DA;
+    --radius:11px; --r-sm:7px;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --paper:#15120E; --surface:#1D1913; --surface-2:#26211A; --surface-3:#2F2921;
+    --ink:#EDE6D9; --ink-soft:#B6AD9E; --ink-faint:#857C6E;
+    --line:rgba(220,205,185,.13); --line-strong:rgba(220,205,185,.26);
+    --accent:#E5726A; --accent-2:#EE8A82; --accent-soft:#38221E;
+    --auto:#63BD91; --auto-soft:#1C2D25;
+    --review:#DDA847; --review-soft:#322510;
+    --info:#6FA6D6; --info-soft:#16283A;
+    --code-bg:#0F0C09; --code-ink:#E3DBCE;
+  }}
+  :root[data-theme="light"]{
+    --paper:#F4F0E8; --surface:#FCFAF5; --surface-2:#EFE9DE; --surface-3:#E7E0D2;
+    --ink:#241E1C; --ink-soft:#574F49; --ink-faint:#8B8177;
+    --line:rgba(60,48,40,.14); --line-strong:rgba(60,48,40,.28);
+    --accent:#BE342A; --accent-2:#8A2822; --accent-soft:#F2DCD8;
+    --auto:#2E7B59; --auto-soft:#DBEAE1;
+    --review:#96640F; --review-soft:#F2E4C8;
+    --info:#2A5B87; --info-soft:#DCE8F2;
+    --code-bg:#2A2320; --code-ink:#ECE5DA;
+  }
+  :root[data-theme="dark"]{
+    --paper:#15120E; --surface:#1D1913; --surface-2:#26211A; --surface-3:#2F2921;
+    --ink:#EDE6D9; --ink-soft:#B6AD9E; --ink-faint:#857C6E;
+    --line:rgba(220,205,185,.13); --line-strong:rgba(220,205,185,.26);
+    --accent:#E5726A; --accent-2:#EE8A82; --accent-soft:#38221E;
+    --auto:#63BD91; --auto-soft:#1C2D25;
+    --review:#DDA847; --review-soft:#322510;
+    --info:#6FA6D6; --info-soft:#16283A;
+    --code-bg:#0F0C09; --code-ink:#E3DBCE;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",-apple-system,system-ui,sans-serif;
+    font-size:16px;line-height:1.75;letter-spacing:.01em;font-feature-settings:"palt"}
+  .wrap{max-width:940px;margin:0 auto;padding:clamp(26px,5vw,64px) clamp(18px,5vw,40px)}
+  code,kbd,pre{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  .tnum{font-variant-numeric:tabular-nums}
+
+  /* Masthead */
+  .mast{border-top:3px solid var(--accent);padding-top:20px;margin-bottom:14px}
+  .kicker{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 14px}
+  .mast h1{font-size:clamp(28px,5.4vw,46px);line-height:1.12;margin:0 0 16px;font-weight:800;letter-spacing:-.01em;text-wrap:balance}
+  .lede{font-size:clamp(15.5px,2.1vw,18px);color:var(--ink-soft);max-width:62ch;margin:0}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+  .tag{font-size:12.5px;padding:4px 11px;border:1px solid var(--line-strong);border-radius:999px;color:var(--ink-soft)}
+  .tag.ok{color:var(--auto);border-color:var(--auto);background:var(--auto-soft);font-weight:600}
+
+  /* TOC */
+  nav.toc{margin:34px 0 8px;padding:18px 20px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+  nav.toc p{margin:0 0 10px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);font-weight:700}
+  nav.toc ol{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:6px 20px;counter-reset:t}
+  nav.toc a{counter-increment:t;display:flex;gap:10px;color:var(--ink);text-decoration:none;padding:4px 0;font-size:14.5px;align-items:baseline}
+  nav.toc a::before{content:counter(t,decimal-leading-zero);color:var(--accent);font-weight:700;font-size:12.5px;font-family:ui-monospace,monospace}
+  nav.toc a:hover{color:var(--accent)}
+
+  section{margin:54px 0;scroll-margin-top:20px}
+  h2{font-size:clamp(20px,3vw,25px);font-weight:800;margin:0 0 8px;letter-spacing:-.01em;display:flex;align-items:baseline;gap:12px;text-wrap:balance}
+  h2 .n{font-family:ui-monospace,monospace;font-size:14px;color:#fff;background:var(--accent);min-width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;flex:none;align-self:center}
+  .sub{color:var(--ink-soft);margin:0 0 24px;font-size:15.5px}
+  h3{font-size:17.5px;font-weight:700;margin:30px 0 12px;letter-spacing:-.005em}
+  p{margin:0 0 14px}
+  a{color:var(--accent);text-underline-offset:3px}
+
+  /* Pipeline / transform visual */
+  .pipe{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px;margin:0 0 16px}
+  .pipe .cap{font-size:12.5px;letter-spacing:.05em;color:var(--ink-faint);font-weight:700;margin:0 0 14px;text-transform:uppercase}
+  .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .chipset{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .fchip{background:var(--surface-2);border:1px solid var(--line-strong);border-radius:var(--r-sm);padding:6px 11px;font-size:13.5px;line-height:1.3}
+  .fchip .k{display:block;font-size:10.5px;color:var(--ink-faint);letter-spacing:.04em;margin-bottom:1px}
+  .fchip .v{font-family:ui-monospace,monospace;font-size:13px;font-weight:600}
+  .fchip.raw{border-style:dashed}
+  .fchip.out{background:var(--auto-soft);border-color:var(--auto)}
+  .fchip.out .v{color:var(--auto)}
+  .plus{color:var(--ink-faint);font-weight:700;font-size:15px}
+  .to{color:var(--accent);font-size:20px;font-weight:700;flex:none}
+  @media(max-width:600px){.to{transform:rotate(90deg);align-self:center}}
+  .rule-note{margin:12px 0 0;font-size:13px;color:var(--ink-soft);padding-left:14px;border-left:2px solid var(--accent)}
+
+  /* Step blocks */
+  .step{display:grid;grid-template-columns:44px 1fr;gap:0 18px;margin:0 0 10px}
+  .step .num{grid-row:1/99;position:relative}
+  .step .num b{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:15px;font-family:ui-monospace,monospace}
+  .step .num::after{content:"";position:absolute;left:17px;top:38px;bottom:-10px;width:2px;background:var(--line-strong)}
+  .step:last-child .num::after{display:none}
+  .step .body{padding-bottom:22px;min-width:0}
+  .step .body h3{margin:3px 0 8px;font-size:16.5px}
+  .step .body p{margin:0 0 10px;font-size:14.5px;color:var(--ink-soft)}
+
+  /* Command panel */
+  .cmd{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin:0 0 18px;background:var(--surface)}
+  .cmd .hd{padding:13px 18px;background:var(--surface-2);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .cmd .hd .t{font-weight:700;font-size:15.5px}
+  .cmd .hd .badge{font-size:11.5px;font-weight:700;letter-spacing:.05em;padding:3px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent);text-transform:uppercase}
+  .cmd .bd{padding:16px 18px}
+  .cmd .bd>p:first-child{margin-top:0}
+  pre{background:var(--code-bg);color:var(--code-ink);border-radius:var(--r-sm);padding:15px 17px;overflow-x:auto;
+      font-size:13.5px;line-height:1.6;margin:0 0 12px;border:1px solid rgba(0,0,0,.35)}
+  pre .c{color:#9a8f7f} pre .p{color:var(--accent-2);filter:brightness(1.35);font-weight:600}
+  :not(pre)>code{background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:.87em}
+
+  /* Tables */
+  .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);margin:0 0 14px}
+  table{border-collapse:collapse;width:100%;font-size:14px;min-width:540px}
+  th,td{text-align:left;padding:11px 15px;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{background:var(--surface-2);font-size:12.5px;letter-spacing:.04em;color:var(--ink-soft);font-weight:700;white-space:nowrap}
+  tbody tr:last-child td{border-bottom:none}
+  .col-field{font-weight:600;white-space:nowrap}
+  td code{white-space:nowrap}
+
+  /* Review cards */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:0 0 8px}
+  .rcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 17px;border-top:3px solid var(--review)}
+  .rcard .chip{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;padding:3px 9px;border-radius:999px;margin-bottom:9px;text-transform:uppercase;background:var(--review-soft);color:var(--review)}
+  .rcard h3{margin:0 0 6px;font-size:15.5px}
+  .rcard p{margin:0 0 10px;font-size:13.6px;color:var(--ink-soft);line-height:1.6}
+  .rcard .ex{font-size:12.3px;background:var(--surface-2);border-radius:6px;padding:8px 10px;font-family:ui-monospace,monospace;color:var(--ink-soft);border:1px solid var(--line)}
+  .rcard .ex b{color:var(--review);font-weight:700}
+
+  /* Callout */
+  .callout{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:var(--radius);padding:14px 18px;margin:14px 0}
+  .callout p{margin:0;font-size:14px;color:var(--ink-soft)} .callout strong{color:var(--ink)}
+  .callout.info{border-left-color:var(--info)} .callout.ok{border-left-color:var(--auto)}
+
+  .tree{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;font-family:ui-monospace,Menlo,monospace;font-size:13px;line-height:1.9;overflow-x:auto}
+  .tree .d{color:var(--accent);font-weight:600} .tree .cm{color:var(--ink-faint)}
+
+  /* mini file mock */
+  .mock{border:1px solid var(--line-strong);border-radius:var(--r-sm);overflow:hidden;margin:0 0 10px;font-size:12.5px}
+  .mock .mh{background:var(--surface-3);padding:6px 12px;font-size:11.5px;color:var(--ink-soft);font-weight:600;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:7px}
+  .mock table{min-width:0;font-size:12.5px}
+  .mock th,.mock td{padding:6px 10px;white-space:nowrap}
+  .mock .flag{color:var(--review);font-weight:700}
+  .fname{font-family:ui-monospace,monospace}
+
+  footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--line);color:var(--ink-faint);font-size:13px}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:10px}
+  .pill{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--ink-soft)}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .dot.a{background:var(--auto)} .dot.r{background:var(--review)}
+</style>
+
+<div class="wrap">
+
+  <header class="mast">
+    <p class="kicker">應付帳款作業 · 圖文操作手冊</p>
+    <h1>支票辨識產出 → 應付帳款明細表<br>自動預填工具</h1>
+    <p class="lede">每個流程步驟都附視覺化說明：從辨識產出到貼入明細表，看得到每一欄如何被轉換、哪些自動完成、哪些需要你確認。</p>
+    <div class="meta">
+      <span class="tag ok">✓ 固定規則對黃金樣板 100% 相符</span>
+      <span class="tag">Python · openpyxl · xlrd</span>
+      <span class="tag">客戶主檔 709 筆</span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="目錄">
+    <p>目錄</p>
+    <ol>
+      <a href="#s1">整體資料流</a>
+      <a href="#s2">安裝與環境</a>
+      <a href="#s3">欄位如何被轉換</a>
+      <a href="#s4">執行：一鍵處理</a>
+      <a href="#s5">四類人工覆核</a>
+      <a href="#s6">名稱差異建檔</a>
+      <a href="#s7">驗證與維護</a>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <section id="s1">
+    <h2><span class="n">1</span> 整體資料流</h2>
+    <p class="sub">三份輸入，經規則引擎產出兩份結果。先看全貌，再逐步拆解。</p>
+
+    <div class="pipe">
+      <p class="cap">輸入 → 處理 → 輸出</p>
+      <div class="row">
+        <div class="chipset">
+          <div class="fchip raw"><span class="k">辨識產出</span><span class="v">支票辨識紀錄</span></div>
+          <div class="fchip raw"><span class="k">會計匯出</span><span class="v">客戶主檔</span></div>
+          <div class="fchip raw"><span class="k">會計匯出</span><span class="v">發票底稿</span></div>
+        </div>
+        <span class="to" aria-hidden="true">→</span>
+        <div class="fchip" style="border-color:var(--accent);background:var(--accent-soft)"><span class="k" style="color:var(--accent)">規則引擎</span><span class="v" style="color:var(--accent)">標準化＋對照＋標記</span></div>
+        <span class="to" aria-hidden="true">→</span>
+        <div class="chipset">
+          <div class="fchip out"><span class="k">產出</span><span class="v">待回填明細</span></div>
+          <div class="fchip out"><span class="k">產出</span><span class="v">名稱差異清單</span></div>
+        </div>
+      </div>
+      <p class="rule-note">「待回填明細」欄位順序與應付帳款明細表的支票區一致，覆核後可直接貼入 11505。</p>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section id="s2">
+    <h2><span class="n">2</span> 安裝與環境</h2>
+    <p class="sub">只需 Python 3 與兩個套件；資料放 <code>data/</code>，產出寫 <code>output/</code>。</p>
+    <div class="step">
+      <div class="num"><b>1</b></div>
+      <div class="body"><h3>安裝相依套件</h3>
+        <p>在專案根目錄執行，一次裝好讀取新舊 Excel 所需的套件：</p>
+        <pre>pip install -r requirements.txt   <span class="c"># openpyxl → .xlsx；xlrd → .xls 客戶主檔</span></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num"><b>2</b></div>
+      <div class="body"><h3>放好資料檔</h3>
+        <p>把各期辨識批次與客戶主檔放進 <code>data/</code>。系統會自動略過 <code>output/</code>（已加入 <code>.gitignore</code>，不進版控）。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section id="s3">
+    <h2><span class="n">3</span> 欄位如何被轉換</h2>
+    <p class="sub">這是工具的核心。以下逐欄展示「辨識原始值 → 明細表格式」的轉換，每個都是固定規則、可重複、對黃金樣板 100% 相符。</p>
+
+    <h3>3.1　支票帳號：銀行簡稱標準化 ＋ 帳號去符號</h3>
+    <div class="pipe">
+      <p class="cap">組合三個辨識欄位</p>
+      <div class="row">
+        <div class="chipset">
+          <div class="fchip raw"><span class="k">銀行</span><span class="v">中國信託銀行</span></div>
+          <span class="plus">+</span>
+          <div class="fchip raw"><span class="k">分行</span><span class="v">蘆洲</span></div>
+          <span class="plus">+</span>
+          <div class="fchip raw"><span class="k">支存帳號</span><span class="v">303350005533</span></div>
+        </div>
+        <span class="to" aria-hidden="true">→</span>
+        <div class="fchip out"><span class="k">支票帳號</span><span class="v">中信蘆洲303350005533</span></div>
+      </div>
+      <p class="rule-note">銀行換簡稱（中國信託→<b>中信</b>），帳號去除破折號：<code>150-031-0018158-7</code> → <code>15003100181587</code>。</p>
+    </div>
+    <div class="callout"><p><strong>銀行簡稱對照（節錄）：</strong>中國信託→中信 · 第一銀行→一銀 · 合作金庫→合庫 · 彰化商銀→彰銀 · 臺灣中小企銀→台企 · 台中商銀→台中銀 · 三信→三信銀。農漁會分行另以對照表處理。</p></div>
+
+    <h3>3.2　日期：民國格式統一轉西元</h3>
+    <div class="pipe">
+      <p class="cap">到期日 · 收票日 · 送票日</p>
+      <div class="row">
+        <div class="fchip raw"><span class="k">辨識（民國）</span><span class="v">115/07/08</span></div>
+        <span class="to" aria-hidden="true">→</span>
+        <div class="fchip out"><span class="k">明細表（日期）</span><span class="v">2026-07-08</span></div>
+      </div>
+      <p class="rule-note">民國字串、Excel datetime 一律正規化為日期，避免格式混雜。</p>
+    </div>
+
+    <h3>3.3　用途與實收金額：依批次覆寫</h3>
+    <div class="pipe">
+      <p class="cap">用送票帳號判定整批用途，再決定實收是否填入</p>
+      <div class="row">
+        <div class="fchip raw"><span class="k">送票帳號</span><span class="v">15000100182967</span></div>
+        <span class="to" aria-hidden="true">→</span>
+        <div class="fchip out"><span class="k">用途</span><span class="v">託收</span></div>
+        <span class="plus">⇒</span>
+        <div class="fchip"><span class="k">實收金額</span><span class="v" style="color:var(--ink-faint)">（留空）</span></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <div class="fchip raw"><span class="k">送票帳號</span><span class="v">57100101404800</span></div>
+        <span class="to" aria-hidden="true">→</span>
+        <div class="fchip out"><span class="k">用途</span><span class="v">交換</span></div>
+        <span class="plus">⇒</span>
+        <div class="fchip out"><span class="k">實收金額</span><span class="v">填入票面</span></div>
+      </div>
+      <p class="rule-note">「交換」批填入票面金額；「託收」批尚未兌現，實收留空——這是你修正版的規則。</p>
+    </div>
+
+    <h3>3.4　客戶簡稱與統編：對客戶主檔</h3>
+    <div class="pipe">
+      <p class="cap">以公司全稱／統編查主檔，補上明細表簡稱</p>
+      <div class="row">
+        <div class="fchip raw"><span class="k">辨識客戶</span><span class="v">裕煌成金屬有限公司</span></div>
+        <span class="to" aria-hidden="true">→</span>
+        <div class="chipset">
+          <div class="fchip out"><span class="k">客戶簡稱</span><span class="v">裕煌成</span></div>
+          <div class="fchip out"><span class="k">統編</span><span class="v">97415975</span></div>
+        </div>
+      </div>
+      <p class="rule-note">查無對應者不臆測 → 轉為「名稱差異」標記（見第 6 節）。</p>
+    </div>
+
+    <div class="callout ok"><p><strong>小結：</strong>支票帳號、日期、用途、實收、送票、備註（禁背）、客戶簡稱／統編——全部由規則自動填妥。</p></div>
+  </section>
+
+  <!-- 4 -->
+  <section id="s4">
+    <h2><span class="n">4</span> 執行：一鍵處理所有批次</h2>
+    <p class="sub">最常用的流程。跟著四步走，從指令到看懂產出。</p>
+
+    <div class="step">
+      <div class="num"><b>1</b></div>
+      <div class="body"><h3>執行主程式</h3>
+        <p>處理 <code>data/</code> 內所有已設定批次，各自輸出一份待回填明細。</p>
+        <pre>python3 src/run_all.py</pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num"><b>2</b></div>
+      <div class="body"><h3>讀懂終端摘要</h3>
+        <p>每批顯示總筆數與需覆核筆數，末行回報名稱差異狀態。</p>
+        <pre>批次處理完成：
+  checks_20260618: 8 筆，<span class="p">6 筆需人工覆核</span> → output/checks_20260618_待回填.xlsx
+  checks_20260624: 10 筆，<span class="p">4 筆需人工覆核</span> → output/checks_20260624_待回填.xlsx
+  checks_20260708: 17 筆，<span class="p">9 筆需人工覆核</span> → output/checks_20260708_待回填.xlsx
+
+<span class="p">無名稱差異，全部客戶皆已對應主檔。</span></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num"><b>3</b></div>
+      <div class="body"><h3>開啟待回填明細</h3>
+        <p>每列一張支票，欄位已是明細表格式；最後兩欄標出需覆核者與原因。</p>
+        <div class="mock">
+          <div class="mh">📄 <span class="fname">output/checks_20260708_待回填.xlsx</span></div>
+          <div style="overflow-x:auto"><table>
+            <thead><tr><th>統編</th><th>客戶簡稱</th><th>支票帳號</th><th>票號</th><th>到期日</th><th>用途</th><th>需覆核</th></tr></thead>
+            <tbody>
+              <tr><td>89646209</td><td>鑫銅</td><td>中信蘆洲303350005533</td><td>BY0682525</td><td>2026-07-15</td><td>託收</td><td></td></tr>
+              <tr><td>—</td><td>台民</td><td>秀水農會1058020</td><td>FA1823384</td><td>2026-07-05</td><td>託收</td><td class="flag">是</td></tr>
+              <tr><td>89510940</td><td>松騰</td><td>京城西港015009681</td><td>5820890</td><td>2026-06-30</td><td>託收</td><td class="flag">是</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num"><b>4</b></div>
+      <div class="body"><h3>覆核後貼入明細表</h3>
+        <p>處理標記為「是」的少數列（見第 5 節），確認無誤後把對應欄位貼進 11505 應付帳款明細表。其餘未標記者可直接採用。</p>
+      </div>
+    </div>
+
+    <h3>其他用法</h3>
+    <div class="cmd">
+      <div class="hd"><span class="t">處理單一批次</span><span class="badge">選用</span></div>
+      <div class="bd">
+        <pre>python3 src/payable_filler.py data/checks_20260708.xlsx <span class="p">-o</span> output/filled.xlsx</pre>
+        <p style="margin:0;font-size:14px;color:var(--ink-soft)">可加 <code>--purpose 交換|託收</code>、<code>--send-bank</code>、<code>--send-account</code> 覆寫批次設定。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section id="s5">
+    <h2><span class="n">5</span> 四類人工覆核</h2>
+    <p class="sub">工具不臆測。遇到判斷題一律在 <code>需人工覆核</code>／<code>覆核原因</code> 兩欄標記，交由你最後確認。以下每類都附實際範例。</p>
+    <div class="cards">
+      <div class="rcard"><span class="chip">辨識端</span><h3>OCR 已標記</h3>
+        <p>辨識專案本身標記需覆核者，帶入原因。</p>
+        <div class="ex"><b>覆核原因：</b>發票人印章無法辨識、客戶主檔未對應</div></div>
+      <div class="rcard"><span class="chip">合併票</span><h3>同客戶多張票</h3>
+        <p>同客戶同帳號多張票疑似併同一發票列，實收加總與到期取捨請人工決定。</p>
+        <div class="ex"><b>覆核原因：</b>同客戶多張票（5820890、5820891）疑似合併</div></div>
+      <div class="rcard"><span class="chip">金額</span><h3>勾稽差額</h3>
+        <p>票面與發票合計有差額（需比對發票列），附註待確認金額。</p>
+        <div class="ex">票面67,180 &lt; 合計68,555　<b>差1,375待確認</b></div></div>
+      <div class="rcard"><span class="chip">名稱差異</span><h3>主檔查無客戶</h3>
+        <p>辨識客戶在主檔查不到，以專屬註記並另行彙整。</p>
+        <div class="ex"><b>【名稱差異】</b>辨識客戶「泰閎鋼鐵有限公司」主檔查無</div></div>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section id="s6">
+    <h2><span class="n">6</span> 名稱差異建檔</h2>
+    <p class="sub">名稱對不上主檔時（用字不同、主檔未登錄），工具單獨列出，讓你逐步累積別名、涵蓋率持續提升。這是一次性建檔、往後自動的循環。</p>
+
+    <div class="step">
+      <div class="num"><b>1</b></div>
+      <div class="body"><h3>查看差異清單</h3>
+        <p>執行 <code>run_all.py</code> 後，開啟自動彙整的清單（去重，含出現批次與票號）。</p>
+        <div class="mock">
+          <div class="mh">📄 <span class="fname">output/名稱差異待建檔.xlsx</span></div>
+          <div style="overflow-x:auto"><table>
+            <thead><tr><th>辨識名稱</th><th>簡稱</th><th>統編</th><th>出現批次</th><th>支票號碼</th></tr></thead>
+            <tbody><tr><td>泰閎鋼鐵有限公司</td><td style="color:var(--ink-faint)">待填</td><td style="color:var(--ink-faint)">待填</td><td>checks_20260618</td><td>XV0548947</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num"><b>2</b></div>
+      <div class="body"><h3>確認正確的簡稱／統編</h3>
+        <p>對照客戶主檔，決定該辨識名稱應對應的明細表簡稱與統一編號。</p>
+        <div class="callout info" style="margin:0"><p>本例辨識為「泰<strong>閎</strong>鋼鐵」，主檔登錄為「泰<strong>閤</strong>鋼鐵」（用字不同）→ 簡稱 <code>泰閤</code>、統編 <code>53057591</code>。</p></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num"><b>3</b></div>
+      <div class="body"><h3>填入別名對照檔</h3>
+        <p>把一列加進 <code>data/customer_alias.csv</code>：</p>
+        <pre>辨識名稱,簡稱,統編
+<span class="p">泰閎鋼鐵有限公司,泰閤,53057591</span>   <span class="c"># 辨識「閎」，主檔「閤」</span></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num"><b>4</b></div>
+      <div class="body"><h3>下次自動解析</h3>
+        <p>再次執行，該名稱自動對應、不再出現在差異清單。</p>
+        <pre><span class="p">無名稱差異，全部客戶皆已對應主檔。</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section id="s7">
+    <h2><span class="n">7</span> 驗證與維護</h2>
+    <p class="sub">改完規則要能證明「產出仍符合你修正過的樣子」，並知道每種調整改哪裡。</p>
+
+    <h3>黃金驗證</h3>
+    <div class="cmd">
+      <div class="hd"><span class="t">對修正版樣板逐欄比對</span><span class="badge" style="background:var(--auto-soft);color:var(--auto)">100% PASS</span></div>
+      <div class="bd">
+        <pre>python3 tests/verify_against_golden.py</pre>
+        <p style="margin:0;font-size:14px;color:var(--ink-soft)">用三個批次跑預填，與 <code>11505_updated</code> 逐欄比對。目前固定規則 <strong>197/197 相符</strong>；人工判斷欄位差異會另外列出，屬預期。</p>
+      </div>
+    </div>
+
+    <h3>要調整什麼，改哪裡</h3>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>調整項目</th><th>檔案 → 位置</th></tr></thead>
+        <tbody>
+          <tr><td class="col-field">新增銀行簡稱</td><td><code>src/normalize.py</code> → <code>BANK_SHORT</code></td></tr>
+          <tr><td class="col-field">新增農漁會分行對照</td><td><code>src/normalize.py</code> → <code>SPECIAL_BRANCH</code> / <code>SPECIAL_ACCOUNT</code></td></tr>
+          <tr><td class="col-field">新增批次送票設定</td><td><code>src/payable_filler.py</code> → <code>KNOWN_BATCHES</code></td></tr>
+          <tr><td class="col-field">新增客戶名稱別名</td><td><code>data/customer_alias.csv</code></td></tr>
+          <tr><td class="col-field">更新客戶主檔</td><td>覆蓋 <code>data/customer_master.xls</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>專案結構</h3>
+    <div class="tree">
+<span class="d">src/</span>
+  normalize.py              <span class="cm"># 欄位標準化規則（銀行/帳號/日期/備註）</span>
+  customer_master.py        <span class="cm"># 客戶主檔對照 ＋ 名稱差異別名檔</span>
+  payable_filler.py         <span class="cm"># 核心：辨識紀錄 → 待回填明細；批次設定</span>
+  run_all.py                <span class="cm"># 一鍵處理所有批次 ＋ 名稱差異彙整</span>
+<span class="d">tests/</span>
+  verify_against_golden.py  <span class="cm"># 對修正版樣板逐欄驗證</span>
+<span class="d">data/</span>
+  customer_master.xls       <span class="cm"># 客戶主檔</span>
+  customer_alias.csv        <span class="cm"># 名稱差異別名（逐步建檔）</span>
+  checks_*.xlsx             <span class="cm"># 各期辨識批次</span>
+<span class="d">output/</span>                    <span class="cm"># 產出（不進版控）</span></div>
+
+    <div class="callout"><p><strong>維護鐵則：</strong>改完任何規則，務必重跑 <code>verify_against_golden.py</code>，確認固定規則維持 100% 相符再交付。</p></div>
+  </section>
+
+  <footer>
+    <div class="legend">
+      <span class="pill"><span class="dot a"></span>綠 = 規則自動完成</span>
+      <span class="pill"><span class="dot r"></span>琥珀 = 需人工覆核</span>
+    </div>
+    <p style="margin:0">產出的「待回填明細」欄位順序與明細表支票區一致，覆核完成後即可貼入 11505 應付帳款明細表。</p>
+  </footer>
+
+</div>
+
+</body>
+</html>
