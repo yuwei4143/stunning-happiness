@@ -16,6 +16,7 @@ from dataclasses import dataclass, field, asdict
 
 import openpyxl
 
+from customer_master import CustomerMaster
 from normalize import (
     compose_check_account,
     roc_to_date,
@@ -58,6 +59,8 @@ class FilledCheck:
     用途: str | None = None
     # 輔助 / 覆核欄位
     客戶: str = ""
+    客戶簡稱: str = ""      # 由客戶主檔對應（明細表所用簡稱）
+    統編: str | None = None
     need_review: bool = False
     review_reasons: list[str] = field(default_factory=list)
 
@@ -88,10 +91,12 @@ def _to_bool(v) -> bool:
 
 
 def fill_record(rec: dict, batch: BatchSettings,
-                invoice_total: int | None = None) -> FilledCheck:
+                invoice_total: int | None = None,
+                master=None) -> FilledCheck:
     """把單筆辨識紀錄轉成明細表格式的 FilledCheck。
 
     invoice_total：若已知對應發票合計，用於金額勾稽備註（可為 None）。
+    master：CustomerMaster 實例，用於對應客戶簡稱與統編（可為 None）。
     """
     out = FilledCheck()
 
@@ -134,6 +139,15 @@ def fill_record(rec: dict, batch: BatchSettings,
         face, invoice_total,
     )
 
+    # 客戶主檔對應：解出明細表所用簡稱與統編。
+    if master is not None:
+        short, tax, matched = master.resolve(rec.get("客戶"))
+        if matched:
+            out.客戶簡稱 = short or ""
+            out.統編 = tax
+        else:
+            out.flag(f"客戶主檔未對應（辨識客戶：{out.客戶}），簡稱/統編請人工確認")
+
     # 覆核旗標：辨識端已標記者一律帶入。
     if _to_bool(rec.get("需人工覆核")):
         out.flag(str(rec.get("覆核原因") or "辨識端標記需人工覆核").strip())
@@ -141,8 +155,9 @@ def fill_record(rec: dict, batch: BatchSettings,
     return out
 
 
-def process_batch(path: str, batch: BatchSettings) -> list[FilledCheck]:
-    filled = [fill_record(rec, batch) for rec in load_check_records(path)]
+def process_batch(path: str, batch: BatchSettings, master=None) -> list[FilledCheck]:
+    filled = [fill_record(rec, batch, master=master)
+              for rec in load_check_records(path)]
     _flag_combine_candidates(filled)
     return filled
 
@@ -168,11 +183,12 @@ def write_output(filled: list[FilledCheck], out_path: str) -> None:
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "待回填明細"
-    headers = CHECK_COLUMNS + ["客戶", "需人工覆核", "覆核原因"]
+    headers = (["統編", "客戶簡稱"] + CHECK_COLUMNS
+               + ["辨識客戶", "需人工覆核", "覆核原因"])
     ws.append(headers)
     for fc in filled:
         d = asdict(fc)
-        row = [d[c] for c in CHECK_COLUMNS]
+        row = [fc.統編, fc.客戶簡稱] + [d[c] for c in CHECK_COLUMNS]
         row += [fc.客戶, "是" if fc.need_review else "",
                 "；".join(fc.review_reasons)]
         ws.append(row)
@@ -194,6 +210,16 @@ KNOWN_BATCHES: dict[str, BatchSettings] = {
         送票日=_dt.date(2026, 7, 8), 用途="託收"),
 }
 
+# 客戶主檔路徑（會計系統匯出的客戶資料明細表）。
+CUSTOMER_MASTER_PATH = "data/customer_master.xls"
+
+
+def load_master(path: str = CUSTOMER_MASTER_PATH):
+    try:
+        return CustomerMaster(path)
+    except FileNotFoundError:
+        return None
+
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="支票辨識產出 → 應付帳款明細預填")
@@ -212,7 +238,7 @@ def main() -> None:
     if args.purpose:
         batch.用途 = args.purpose
 
-    filled = process_batch(args.check_file, batch)
+    filled = process_batch(args.check_file, batch, master=load_master())
     write_output(filled, args.output)
     n_rv = sum(1 for f in filled if f.need_review)
     print(f"已處理 {len(filled)} 筆，其中 {n_rv} 筆需人工覆核 → {args.output}")
