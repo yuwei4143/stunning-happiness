@@ -47,6 +47,19 @@ python packaging/build_app.py
 
 需人工覆核的列會在最後兩欄標明，確認後貼入 11505 應付帳款明細表。
 
+## 沒有 Windows 電腦？用 GitHub Actions 自動建置
+
+專案內含 `.github/workflows/build-windows.yml`，會在**雲端 Windows 機器**自動打包，
+不必自己準備 Windows：
+
+1. **推送分支即自動建置**：每次推送到 `claude/**` 分支或手動觸發後，到 GitHub 專案的
+   **Actions** 分頁 → 點該次執行 → 下方 **Artifacts** 下載 `應付帳款預填-windows`（內含 .exe）。
+2. **手動觸發**：Actions 分頁 → 左側「打包 Windows 執行檔」→ **Run workflow**。
+3. **正式發佈**：打一個 `v` 開頭的 tag（例如 `git tag v1.0 && git push origin v1.0`），
+   會自動把 .exe 附到對應的 **Release** 供長期下載。
+
+下載後同樣把 .exe 與 `customer_master.xls` 放同一資料夾交給同事即可。
+
 ## 疑難排解
 
 - **拖放沒反應**：未安裝 `tkinterdnd2` 時拖放會停用，改按「選擇檔案」即可，功能不受影響。

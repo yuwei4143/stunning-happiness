@@ -1,0 +1,46 @@
+name: 打包 Windows 執行檔
+
+# 推送到開發分支、打 tag（v*），或手動觸發時，於雲端 Windows 機器打包 .exe
+on:
+  push:
+    branches:
+      - "claude/**"
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write   # 打 tag 時建立 Release 需要
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: 取出程式碼
+        uses: actions/checkout@v4
+
+      - name: 安裝 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安裝相依套件
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller tkinterdnd2 openpyxl xlrd
+
+      - name: 打包單一執行檔
+        run: python packaging/build_app.py
+
+      - name: 上傳執行檔（Actions 產物，可直接下載）
+        uses: actions/upload-artifact@v4
+        with:
+          name: 應付帳款預填-windows
+          path: dist/*.exe
+          if-no-files-found: error
+
+      - name: 發佈到 Release（僅限 v* tag）
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.exe
