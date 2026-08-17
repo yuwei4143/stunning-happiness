@@ -12,6 +12,9 @@ on:
 permissions:
   contents: write   # 打 tag 時建立 Release 需要
 
+env:
+  PYTHONUTF8: "1"   # 讓 Windows 上的 Python 用 UTF-8 輸出，避免中文 print 崩潰
+
 jobs:
   build-windows:
     runs-on: windows-latest

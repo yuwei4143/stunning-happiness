@@ -13,6 +13,13 @@ import os
 import subprocess
 import sys
 
+# Windows 主控台預設 cp1252，無法輸出中文；強制 stdio 為 UTF-8。
+for _s in (sys.stdout, sys.stderr):
+    try:
+        _s.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENTRY = os.path.join(ROOT, "src", "ap_gui.py")
 NAME = "應付帳款預填"
