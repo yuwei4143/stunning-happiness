@@ -71,6 +71,17 @@ ap-fill data/checks_20260708.xlsx -o output/filled.xlsx
 
 安裝後仍需在專案根目錄執行（工具會讀取 `data/`、寫入 `output/`）。
 
+## 圖形介面與單一執行檔
+
+不熟指令的同事可用拖放式視窗：
+
+```bash
+pip install .[gui]      # 一併安裝拖放套件 tkinterdnd2
+ap-gui                  # 或 python3 src/ap_gui.py
+```
+
+要打包成雙擊即用的單一執行檔（.exe / .app），見 [`packaging/README.md`](packaging/README.md)。
+
 ## 檔案結構
 
 ```

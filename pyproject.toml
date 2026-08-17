@@ -13,10 +13,17 @@ dependencies = [
     "xlrd>=2.0",
 ]
 
+[project.optional-dependencies]
+gui = ["tkinterdnd2>=0.4"]
+build = ["pyinstaller>=6.0", "tkinterdnd2>=0.4"]
+
 [project.scripts]
 ap-fill = "payable_filler:main"
 ap-run-all = "run_all:main"
 
+[project.gui-scripts]
+ap-gui = "ap_gui:main"
+
 [tool.setuptools]
 package-dir = {"" = "src"}
-py-modules = ["normalize", "customer_master", "payable_filler", "run_all"]
+py-modules = ["normalize", "customer_master", "payable_filler", "run_all", "ap_gui"]
