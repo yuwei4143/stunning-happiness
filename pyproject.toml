@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ap-payable-filler"
+version = "1.0.0"
+description = "支票辨識產出 → 應付帳款明細表 自動預填工具"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "openpyxl>=3.1",
+    "xlrd>=2.0",
+]
+
+[project.scripts]
+ap-fill = "payable_filler:main"
+ap-run-all = "run_all:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+py-modules = ["normalize", "customer_master", "payable_filler", "run_all"]

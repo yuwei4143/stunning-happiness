@@ -43,7 +43,7 @@
 ## 使用方式
 
 ```bash
-pip install openpyxl
+pip install openpyxl xlrd
 
 # 處理單一批次
 python3 src/payable_filler.py data/checks_20260708.xlsx -o output/filled.xlsx
@@ -57,6 +57,19 @@ python3 tests/verify_against_golden.py
 
 輸出為「待回填明細」工作表，欄位順序與明細表支票區一致，並附
 `需人工覆核`／`覆核原因` 兩欄。覆核完成後即可貼入 11505 應付帳款明細表。
+
+## 安裝為指令工具（選用）
+
+在專案根目錄安裝後，即可用 `ap-fill` / `ap-run-all` 指令，不必打完整路徑：
+
+```bash
+pip install .          # 或 pip install -e . 進行開發模式安裝
+
+ap-run-all             # 一鍵處理所有批次
+ap-fill data/checks_20260708.xlsx -o output/filled.xlsx
+```
+
+安裝後仍需在專案根目錄執行（工具會讀取 `data/`、寫入 `output/`）。
 
 ## 檔案結構
 
