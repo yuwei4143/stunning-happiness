@@ -8,6 +8,11 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "填入版本標籤（例如 v1.0）即建立正式 Release；留空只產生下載產物"
+        required: false
+        default: ""
 
 permissions:
   contents: write   # 打 tag 時建立 Release 需要
@@ -42,8 +47,15 @@ jobs:
           path: dist/*.exe
           if-no-files-found: error
 
-      - name: 發佈到 Release（僅限 v* tag）
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: 發佈到 Release（打 v* tag，或手動填入 release_tag）
+        if: startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != ''
         uses: softprops/action-gh-release@v2
         with:
+          # tag 觸發用該 tag；手動觸發用輸入的版本，並在此 commit 上建立 tag
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || inputs.release_tag }}
+          target_commitish: ${{ github.sha }}
+          name: 應付帳款自動預填工具 ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || inputs.release_tag }}
+          body: |
+            支票辨識產出 → 應付帳款明細表 自動預填工具。
+            下載下方 `應付帳款預填.exe`，與 `customer_master.xls` 放同一資料夾後雙擊即用。
           files: dist/*.exe
