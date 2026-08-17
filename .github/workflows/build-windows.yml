@@ -47,6 +47,13 @@ jobs:
           path: dist/*.exe
           if-no-files-found: error
 
+      # GitHub Release 附件不接受非 ASCII 檔名（會被改成 default.exe），
+      # 故把中文名的 exe 打包進 ASCII 檔名的 zip，解壓後即為「應付帳款預填.exe」。
+      - name: 壓縮成 zip（保留中文 exe 檔名）
+        if: startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != ''
+        shell: pwsh
+        run: Compress-Archive -Path dist/*.exe -DestinationPath dist/PayableFiller-Windows.zip -Force
+
       - name: 發佈到 Release（打 v* tag，或手動填入 release_tag）
         if: startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != ''
         uses: softprops/action-gh-release@v2
@@ -57,5 +64,16 @@ jobs:
           name: 應付帳款自動預填工具 ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || inputs.release_tag }}
           body: |
             支票辨識產出 → 應付帳款明細表 自動預填工具。
-            下載下方 `應付帳款預填.exe`，與 `customer_master.xls` 放同一資料夾後雙擊即用。
-          files: dist/*.exe
+
+            下載 `PayableFiller-Windows.zip`，解壓後得到 **應付帳款預填.exe**，
+            與 `customer_master.xls` 放同一資料夾後雙擊即用。
+          files: dist/PayableFiller-Windows.zip
+
+      - name: 清除舊的 default.exe 附件（若存在）
+        if: startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != ''
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || inputs.release_tag }}"
+          gh release delete-asset "$tag" default.exe -y 2>$null; exit 0
