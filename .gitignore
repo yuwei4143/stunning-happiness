@@ -1,3 +1,5 @@
 output/
 __pycache__/
 *.pyc
+備份/
+fund_plan.config.json
