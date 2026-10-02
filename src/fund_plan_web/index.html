@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>月資金計劃表 線上表單</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
+<style>
+  :root{
+    --paper:#F4F0E8; --surface:#FCFAF5; --surface-2:#EFE9DE; --surface-3:#E7E0D2;
+    --ink:#241E1C; --ink-soft:#574F49; --ink-faint:#8B8177;
+    --line:rgba(60,48,40,.14); --line-strong:rgba(60,48,40,.28);
+    --accent:#BE342A; --accent-soft:#F2DCD8;
+    --ok:#2E7B59; --ok-soft:#DBEAE1;
+    --warn:#96640F; --warn-soft:#F2E4C8;
+    --info:#2A5B87; --info-soft:#DCE8F2;
+    --neg:#B3261E; --neg-soft:#F8D7D3;
+    --comp:#F3EFE6; --focus:#2A5B87;
+    --radius:10px; --r-sm:6px;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --paper:#15120E; --surface:#1D1913; --surface-2:#26211A; --surface-3:#2F2921;
+    --ink:#EDE6D9; --ink-soft:#B6AD9E; --ink-faint:#857C6E;
+    --line:rgba(220,205,185,.13); --line-strong:rgba(220,205,185,.26);
+    --accent:#E5726A; --accent-soft:#38221E;
+    --ok:#63BD91; --ok-soft:#1C2D25;
+    --warn:#DDA847; --warn-soft:#322510;
+    --info:#6FA6D6; --info-soft:#16283A;
+    --neg:#F08A80; --neg-soft:#3A1E1B;
+    --comp:#221D17; --focus:#6FA6D6;
+  }}
+  :root[data-theme="dark"]{
+    --paper:#15120E; --surface:#1D1913; --surface-2:#26211A; --surface-3:#2F2921;
+    --ink:#EDE6D9; --ink-soft:#B6AD9E; --ink-faint:#857C6E;
+    --line:rgba(220,205,185,.13); --line-strong:rgba(220,205,185,.26);
+    --accent:#E5726A; --accent-soft:#38221E;
+    --ok:#63BD91; --ok-soft:#1C2D25;
+    --warn:#DDA847; --warn-soft:#322510;
+    --info:#6FA6D6; --info-soft:#16283A;
+    --neg:#F08A80; --neg-soft:#3A1E1B;
+    --comp:#221D17; --focus:#6FA6D6;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",-apple-system,system-ui,sans-serif;
+    font-size:14px;line-height:1.5;display:flex;flex-direction:column;min-height:100vh}
+  .tnum{font-variant-numeric:tabular-nums}
+  button{font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line-strong);
+    border-radius:var(--r-sm);padding:6px 12px;cursor:pointer}
+  button:hover{background:var(--surface-2)}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.primary:hover{filter:brightness(.95)}
+  button:disabled{opacity:.5;cursor:default}
+  input[type=text],input[type=search],input[type=number]{font:inherit;color:inherit;background:var(--surface);
+    border:1px solid var(--line-strong);border-radius:var(--r-sm);padding:5px 8px}
+
+  /* 頂欄 */
+  header{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line);
+    padding:10px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+  header h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.02em}
+  header .file{color:var(--ink-soft);font-size:12px;word-break:break-all}
+  header .file b{color:var(--ink)}
+  .spacer{flex:1}
+  .pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 12px;font-size:12.5px;
+    font-weight:600;border:1px solid transparent;white-space:nowrap}
+  .pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+  .pill.clean{background:var(--ok-soft);color:var(--ok)}
+  .pill.pending,.pill.saving{background:var(--warn-soft);color:var(--warn)}
+  .pill.saving::before{animation:blink 1s infinite}
+  .pill.error,.pill.conflict{background:var(--neg-soft);color:var(--neg)}
+  .pill.external{background:var(--info-soft);color:var(--info)}
+  @keyframes blink{50%{opacity:.2}}
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+
+  .banner{margin:12px 16px 0;padding:10px 14px;border-radius:var(--radius);border:1px solid var(--line-strong);
+    display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .banner.warn{background:var(--warn-soft);border-color:var(--warn)}
+  .banner.neg{background:var(--neg-soft);border-color:var(--neg)}
+  .banner.info{background:var(--info-soft);border-color:var(--info)}
+
+  /* 月份分頁 */
+  .tabs{display:flex;gap:4px;flex-wrap:wrap;padding:12px 16px 0}
+  .tabs button{border-radius:var(--r-sm) var(--r-sm) 0 0;border-bottom:none;padding:6px 14px;background:var(--surface-2)}
+  .tabs button.active{background:var(--surface);font-weight:700;color:var(--accent);
+    box-shadow:inset 0 -3px 0 var(--accent)}
+  .tabs .count{font-size:11px;color:var(--ink-faint);margin-left:4px}
+
+  main{flex:1;padding:0 16px 24px;display:flex;flex-direction:column;gap:12px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:0 var(--radius) var(--radius) var(--radius)}
+
+  /* KPI */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;padding:14px 16px 4px}
+  .kpi{background:var(--surface-2);border-radius:var(--r-sm);padding:10px 12px}
+  .kpi .lbl{font-size:12px;color:var(--ink-soft)}
+  .kpi .val{font-size:20px;font-weight:700;margin-top:2px}
+  .kpi .sub{font-size:11.5px;color:var(--ink-faint)}
+  .kpi.neg .val{color:var(--neg)}
+
+  /* 工具列 */
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:10px 16px;border-top:1px solid var(--line)}
+  .toolbar label{display:inline-flex;align-items:center;gap:5px;color:var(--ink-soft);font-size:13px}
+  .toolbar input[type=search]{min-width:200px}
+  .toolbar input[type=number]{width:110px}
+
+  /* 表格 */
+  .tablewrap{overflow:auto;max-height:calc(100vh - 290px);border-top:1px solid var(--line);
+    border-radius:0 0 var(--radius) var(--radius)}
+  table{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%}
+  th,td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:0;vertical-align:middle}
+  thead th{position:sticky;top:0;z-index:5;background:var(--surface-3);font-size:12.5px;font-weight:700;
+    padding:8px 10px;text-align:left;white-space:nowrap}
+  thead th.money{text-align:right}
+  thead th .col{font-weight:400;color:var(--ink-faint);font-size:11px;margin-left:4px}
+  thead th.computed{color:var(--ink-soft)}
+  thead th.computed::after{content:" ƒ";color:var(--info);font-family:serif;font-style:italic}
+  th.rownum,td.rownum{position:sticky;left:0;z-index:4;background:var(--surface-2);color:var(--ink-faint);
+    font-size:11.5px;text-align:right;padding:0 8px;width:44px}
+  thead th.rownum{z-index:6}
+  td.ops{white-space:nowrap;padding:0 4px}
+  td.ops button{padding:1px 7px;font-size:11.5px;border-color:transparent;background:transparent;color:var(--ink-faint)}
+  td.ops button:hover{color:var(--neg);background:var(--neg-soft)}
+  td input{width:100%;min-width:60px;border:0;background:transparent;padding:6px 10px;font:inherit;color:inherit;
+    outline:none}
+  td input:focus{box-shadow:inset 0 0 0 2px var(--focus);background:var(--surface)}
+  td.money input,td.number input{text-align:right}
+  td.date input{min-width:96px}
+  td.number input{min-width:44px;width:56px}
+  td.text input{min-width:110px}
+  td.text.wide input{min-width:220px}
+  td.computed{background:var(--comp);padding:6px 10px;text-align:right;color:var(--ink-soft);white-space:nowrap}
+  td.computed.textv{text-align:center}
+  td.computed.cache{text-decoration:underline dotted var(--warn)}
+  td.computed.err{color:var(--ink-faint)}
+  td.computed.negv{color:var(--neg);font-weight:700;background:var(--neg-soft)}
+  td.computed.lowv{color:var(--warn);font-weight:700;background:var(--warn-soft)}
+  tr.empty td:not(.rownum):not(.computed){opacity:.75}
+  tr.dirty td.rownum{background:var(--warn-soft);color:var(--warn)}
+  tr.saved-flash td{animation:flash 1.2s}
+  @keyframes flash{from{background:var(--ok-soft)}}
+  tr.hidden{display:none}
+  td.errcell input{box-shadow:inset 0 0 0 2px var(--neg)}
+  tfoot td{position:sticky;bottom:0;background:var(--surface-3);font-weight:700;padding:7px 10px;text-align:right;
+    white-space:nowrap;border-top:2px solid var(--line-strong)}
+  tfoot td.rownum{text-align:right;font-size:12px}
+
+  /* 側欄 */
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(520px,100vw);background:var(--surface);
+    border-left:1px solid var(--line-strong);box-shadow:-8px 0 30px rgba(0,0,0,.15);z-index:30;
+    display:flex;flex-direction:column;transform:translateX(100%);transition:transform .2s}
+  .drawer.open{transform:none}
+  .drawer .dh{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+  .drawer .dh h2{font-size:15px;margin:0;flex:1}
+  .drawer .db{overflow:auto;padding:8px 16px 16px;font-size:13px}
+  .drawer table{width:100%}
+  .drawer td,.drawer th{padding:5px 6px;font-size:12.5px;text-align:left;vertical-align:top}
+  .drawer td.new{color:var(--ok);font-weight:600}
+  .drawer td.old{color:var(--ink-faint);text-decoration:line-through}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--paper);
+    padding:9px 16px;border-radius:999px;font-size:13px;z-index:40;opacity:0;transition:opacity .2s;pointer-events:none;
+    max-width:90vw}
+  .toast.show{opacity:1}
+  .hint{font-size:12px;color:var(--ink-faint);padding:0 16px 12px}
+  kbd{font:11px ui-monospace,Menlo,monospace;background:var(--surface-3);border:1px solid var(--line-strong);
+    border-radius:4px;padding:0 5px}
+  .empty-state{padding:40px;text-align:center;color:var(--ink-faint)}
+  @media (max-width:640px){
+    header h1{font-size:15px}
+    .tablewrap{max-height:none}
+    .kpi .val{font-size:17px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>月資金計劃表 線上表單</h1>
+    <div class="file" id="fileinfo">載入中…</div>
+  </div>
+  <div class="spacer"></div>
+  <span class="pill pending" id="pill">連線中…</span>
+  <div class="actions">
+    <button id="btnSave" title="立即把目前所有變動寫回原檔">立即寫回</button>
+    <button id="btnReload" title="放棄記憶體內容，從資料夾的原檔重新讀取">重新載入</button>
+    <button id="btnLog">異動紀錄</button>
+  </div>
+</header>
+
+<div id="banner" hidden></div>
+
+<div class="tabs" id="tabs"></div>
+<main>
+  <div class="card" id="card">
+    <div class="kpis" id="kpis"></div>
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="篩選摘要／備註／銀行…">
+      <label><input type="checkbox" id="hideEmpty"> 隱藏空白列</label>
+      <label>現金警戒線 <input type="number" id="threshold" value="0" step="100000" class="tnum"></label>
+      <span class="spacer"></span>
+      <button id="btnAddRow">＋ 新增一列</button>
+    </div>
+    <div class="tablewrap" id="tablewrap"></div>
+    <div class="hint">直接在格子裡輸入，離開格子即自動寫回原檔。<kbd>Enter</kbd> 往下一列、<kbd>Tab</kbd> 往右、<kbd>Esc</kbd> 還原。
+      日期可輸入 <code>115/09/10</code>、<code>2026-09-10</code> 或 <code>9/10</code>；灰底 ƒ 欄由公式自動計算，不可手動修改。</div>
+  </div>
+</main>
+
+<aside class="drawer" id="drawer">
+  <div class="dh"><h2>異動紀錄</h2><button id="btnLogRefresh">更新</button><button id="btnLogClose">關閉</button></div>
+  <div class="db" id="logbody"></div>
+</aside>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const state = { sheets: [], current: null, data: null, status: null, pendingFocus: null, threshold: 0 };
+  const api = async (url, opt) => {
+    const res = await fetch(url, opt ? {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(opt)} : undefined);
+    const j = await res.json().catch(() => ({error: res.statusText}));
+    if (!res.ok && !j.status) throw new Error(j.error || res.statusText);
+    if (!res.ok) { const e = new Error(j.error || res.statusText); e.status = j.status; e.code = res.status; throw e; }
+    return j;
+  };
+  let toastTimer;
+  const toast = (msg, ms = 2600) => { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms); };
+  const fmtMoney = n => (n == null || n === '') ? '' : Number(n).toLocaleString('zh-TW', {maximumFractionDigits: 0});
+  const isNum = v => typeof v === 'number' && !Number.isNaN(v);
+
+  // ---------- 狀態 ----------
+  function renderStatus(st) {
+    if (!st) return;
+    state.status = st;
+    const pill = $('#pill');
+    const map = {
+      clean: ['clean', st.last_saved ? `已同步原檔 ${st.last_saved.slice(11)}` : '與原檔一致'],
+      pending: ['pending', `待寫回 ${st.pending} 筆…`],
+      saving: ['saving', '寫入原檔中…'],
+      error: ['error', '寫回失敗（自動重試中）'],
+      conflict: ['conflict', '衝突：原檔已被外部修改'],
+      external: ['external', '原檔已在外部更新'],
+    };
+    const [cls, txt] = map[st.sync] || ['pending', st.sync];
+    pill.className = 'pill ' + cls; pill.textContent = txt;
+    pill.title = st.error || (st.backup ? `本次工作階段備份：${st.backup}` : '');
+    $('#fileinfo').innerHTML = `<b>${esc(st.file)}</b> · ${esc(st.path)}` + (st.backup ? ` · 備份：${esc(st.backup)}` : '');
+    const b = $('#banner');
+    if (st.sync === 'conflict') {
+      b.hidden = false; b.className = 'banner neg';
+      b.innerHTML = `<b>原檔在載入後被其他程式（例如 Excel）儲存過。</b>為避免覆寫對方的資料，線上變動暫停寫回。
+        <button id="bDiscard">放棄線上變動，重新載入原檔</button> <button id="bForce" class="primary">以線上內容覆寫原檔</button>`;
+      $('#bDiscard').onclick = () => reload(true);
+      $('#bForce').onclick = async () => { if (!confirm('確定用線上表單的內容覆寫原檔？對方在 Excel 內的修改會遺失。')) return; await api('/api/save', {force: true}).then(r => { renderStatus(r.status); toast('已覆寫原檔'); }).catch(e => toast(e.message)); };
+    } else if (st.sync === 'external') {
+      b.hidden = false; b.className = 'banner info';
+      b.innerHTML = `原檔已在外部更新（例如在 Excel 存檔）。畫面內容可能不是最新。<button id="bReload">重新載入</button>`;
+      $('#bReload').onclick = () => reload(false);
+    } else if (st.sync === 'error') {
+      b.hidden = false; b.className = 'banner warn';
+      b.innerHTML = `<b>寫回原檔失敗：</b>${esc(st.error || '')} 變動已保留在記憶體，會自動重試；也可關閉 Excel 後按「立即寫回」。`;
+    } else { b.hidden = true; b.innerHTML = ''; }
+    $('#btnSave').disabled = !st.dirty;
+  }
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  async function poll() {
+    try { const st = await api('/api/status'); if (st.sync !== state.status?.sync || st.pending !== state.status?.pending || st.last_saved !== state.status?.last_saved) renderStatus(st); }
+    catch (e) { $('#pill').className = 'pill error'; $('#pill').textContent = '伺服器離線'; }
+  }
+  setInterval(poll, 3000);
+
+  // ---------- 分頁 ----------
+  function renderTabs() {
+    const t = $('#tabs'); t.innerHTML = '';
+    for (const s of state.sheets) {
+      const b = document.createElement('button');
+      b.textContent = s; b.className = s === state.current ? 'active' : '';
+      b.onclick = () => loadSheet(s);
+      t.appendChild(b);
+    }
+  }
+  async function loadSheet(name) {
+    state.current = name; renderTabs();
+    try { localStorage.setItem('fundplan.sheet', name); } catch (_) {}
+    const d = await api('/api/sheet/' + encodeURIComponent(name));
+    state.data = d; renderStatus(d.status);
+    buildTable(d);
+  }
+
+  // ---------- 欄位角色 ----------
+  function roles(cols) {
+    const find = (words, pred) => cols.find(c => words.some(w => c.title.replace(/\s/g,'').includes(w)) && (!pred || pred(c)));
+    return {
+      date: find(['日期']),
+      summary: find(['摘要']),
+      out: find(['支出'], c => c.editable),
+      inflow: find(['未入餘額','收入','入帳'], c => c.editable),
+      cash: find(['目前現金','現金餘額','現金'], c => !c.editable) || find(['現金']),
+      payable: find(['實際應付'], c => !c.editable),
+    };
+  }
+
+  // ---------- 表格 ----------
+  function buildTable(d) {
+    const wrap = $('#tablewrap'); wrap.innerHTML = '';
+    if (!d.rows.length) { wrap.innerHTML = '<div class="empty-state">此分頁沒有資料列</div>'; return; }
+    const R = roles(d.columns);
+    const tbl = document.createElement('table');
+    const thead = tbl.createTHead(); const hr = thead.insertRow();
+    const th0 = document.createElement('th'); th0.className = 'rownum'; th0.textContent = '列'; hr.appendChild(th0);
+    for (const c of d.columns) {
+      const th = document.createElement('th');
+      th.className = c.kind + (c.editable ? '' : ' computed');
+      th.innerHTML = `${esc(c.title)}<span class="col">${c.letter}</span>`;
+      if (c.formula) th.title = c.formula;
+      hr.appendChild(th);
+    }
+    const thOps = document.createElement('th'); thOps.textContent = ''; hr.appendChild(thOps);
+    const tbody = tbl.createTBody();
+    for (const row of d.rows) tbody.appendChild(buildRow(d, row, R));
+    const tfoot = tbl.createTFoot(); const fr = tfoot.insertRow();
+    const f0 = fr.insertCell(); f0.className = 'rownum'; f0.textContent = '合計';
+    for (const c of d.columns) { const td = fr.insertCell(); td.dataset.col = c.letter; td.className = 'tnum'; }
+    fr.insertCell();
+    wrap.appendChild(tbl);
+    tbl.addEventListener('focusin', e => { if (e.target.matches('input')) e.target.dataset.orig = e.target.value; });
+    tbl.addEventListener('keydown', onKey);
+    tbl.addEventListener('change', e => { if (e.target.matches('input[data-col]')) commit(e.target); });
+    applyFilter(); updateComputed(d); renderKpis(d, R);
+    if (state.pendingFocus) { const el = tbl.querySelector(`input[data-row="${state.pendingFocus.row}"][data-col="${state.pendingFocus.col}"]`); if (el) { el.focus(); el.select(); } state.pendingFocus = null; }
+  }
+  function buildRow(d, row, R) {
+    const tr = document.createElement('tr'); tr.dataset.row = row.r; if (row.empty) tr.classList.add('empty');
+    const td0 = document.createElement('td'); td0.className = 'rownum'; td0.textContent = row.r; tr.appendChild(td0);
+    for (const c of d.columns) {
+      const cell = row.cells[c.letter] || {};
+      const td = document.createElement('td'); td.dataset.col = c.letter;
+      if (c.editable) {
+        td.className = c.kind + (c.title.includes('備註') ? ' wide' : '');
+        const inp = document.createElement('input'); inp.type = 'text';
+        inp.dataset.row = row.r; inp.dataset.col = c.letter; inp.value = cell.d ?? '';
+        inp.autocomplete = 'off'; inp.spellcheck = false;
+        if (c.kind === 'money' || c.kind === 'number') inp.classList.add('tnum'), inp.inputMode = 'numeric';
+        if (c.kind === 'date') inp.placeholder = '115/09/10';
+        td.appendChild(inp);
+      } else {
+        td.className = 'computed tnum';
+        setComputed(td, cell, c, R);
+      }
+      tr.appendChild(td);
+    }
+    const ops = document.createElement('td'); ops.className = 'ops';
+    const bc = document.createElement('button'); bc.textContent = '清空'; bc.title = '清空此列可編輯欄位（保留列與公式）';
+    bc.onclick = () => clearRow(row.r);
+    ops.appendChild(bc); tr.appendChild(ops);
+    return tr;
+  }
+  function setComputed(td, cell, c, R) {
+    td.classList.remove('cache', 'err', 'negv', 'lowv', 'textv');
+    if (cell.src === 'error') { td.textContent = '—'; td.classList.add('err'); td.title = `無法即時計算（${cell.err || ''}），Excel 開檔時會重算。公式：${cell.f || ''}`; return; }
+    td.textContent = cell.d ?? '';
+    td.title = cell.f || '';
+    if (cell.src === 'cache') { td.classList.add('cache'); td.title = '顯示的是檔案內的快取值（公式含未支援的函數）\n' + (cell.f || ''); }
+    if (typeof cell.v === 'string') td.classList.add('textv');
+    if (R.cash && c.letter === R.cash.letter && isNum(cell.v)) {
+      if (cell.v < 0) td.classList.add('negv');
+      else if (cell.v < state.threshold) td.classList.add('lowv');
+    }
+  }
+  function updateComputed(d) {
+    const R = roles(d.columns);
+    const tbl = $('#tablewrap table'); if (!tbl) return;
+    const rowsById = new Map(d.rows.map(r => [String(r.r), r]));
+    for (const tr of tbl.tBodies[0].rows) {
+      const row = rowsById.get(tr.dataset.row); if (!row) continue;
+      tr.classList.toggle('empty', !!row.empty);
+      for (const td of tr.cells) {
+        const L = td.dataset.col; if (!L) continue;
+        const c = d.columns.find(x => x.letter === L); const cell = row.cells[L] || {};
+        if (c.editable) {
+          const inp = td.firstElementChild;
+          if (inp && document.activeElement !== inp) inp.value = cell.d ?? '';
+        } else setComputed(td, cell, c, R);
+      }
+    }
+    // 合計列
+    const totals = {};
+    for (const c of d.columns) {
+      if (!(c.kind === 'money' || (c.kind === 'computed'))) continue;
+      let sum = 0, n = 0;
+      for (const row of d.rows) { const v = row.cells[c.letter]?.v; if (isNum(v)) { sum += v; n++; } }
+      totals[c.letter] = n ? sum : null;
+    }
+    for (const td of tbl.tFoot.rows[0].cells) {
+      const L = td.dataset.col; if (!L) continue;
+      const c = d.columns.find(x => x.letter === L);
+      const isCash = R.cash && L === R.cash.letter;
+      td.textContent = (isCash || totals[L] == null || c.kind === 'number') ? '' : fmtMoney(totals[L]);
+    }
+    if (R.cash) { const last = lastFilledRow(d, R); const td = tbl.tFoot.rows[0].querySelector(`td[data-col="${R.cash.letter}"]`); if (td && last) td.textContent = '月底 ' + (last.cells[R.cash.letter]?.d ?? ''); }
+  }
+  function lastFilledRow(d, R) { for (let i = d.rows.length - 1; i >= 0; i--) if (!d.rows[i].empty) return d.rows[i]; return null; }
+  function renderKpis(d, R) {
+    const k = $('#kpis'); k.innerHTML = '';
+    const sum = col => col ? d.rows.reduce((a, r) => a + (isNum(r.cells[col.letter]?.v) ? r.cells[col.letter].v : 0), 0) : null;
+    const filled = d.rows.filter(r => !r.empty).length;
+    const tiles = [];
+    if (R.out) tiles.push({lbl: `${R.out.title}合計`, val: fmtMoney(sum(R.out)), sub: `${filled} 列有資料`});
+    if (R.inflow) tiles.push({lbl: `${R.inflow.title}合計`, val: fmtMoney(sum(R.inflow))});
+    if (R.cash) {
+      const last = lastFilledRow(d, R);
+      const endCash = last ? last.cells[R.cash.letter]?.v : null;
+      tiles.push({lbl: '月底目前現金', val: isNum(endCash) ? fmtMoney(endCash) : '—', neg: isNum(endCash) && endCash < 0, sub: last ? `第 ${last.r} 列 ${last.cells[R.date?.letter]?.d || ''}` : ''});
+      let min = null, minRow = null;
+      for (const r of d.rows) { if (r.empty) continue; const v = r.cells[R.cash.letter]?.v; if (isNum(v) && (min == null || v < min)) { min = v; minRow = r; } }
+      tiles.push({lbl: '最低現金點', val: min == null ? '—' : fmtMoney(min), neg: min != null && min < state.threshold,
+        sub: minRow ? `${minRow.cells[R.date?.letter]?.d || ''} ${minRow.cells[R.summary?.letter]?.d || ''}` : ''});
+      const below = d.rows.filter(r => !r.empty && isNum(r.cells[R.cash.letter]?.v) && r.cells[R.cash.letter].v < state.threshold).length;
+      tiles.push({lbl: '低於警戒線的日子', val: String(below), neg: below > 0, sub: `警戒線 ${fmtMoney(state.threshold)}`});
+    }
+    for (const t of tiles) {
+      const div = document.createElement('div'); div.className = 'kpi' + (t.neg ? ' neg' : '');
+      div.innerHTML = `<div class="lbl">${esc(t.lbl)}</div><div class="val tnum">${esc(t.val)}</div><div class="sub">${esc(t.sub || '')}</div>`;
+      k.appendChild(div);
+    }
+  }
+
+  // ---------- 篩選 ----------
+  function applyFilter() {
+    const q = $('#q').value.trim().toLowerCase(); const hide = $('#hideEmpty').checked;
+    const tbl = $('#tablewrap table'); if (!tbl || !state.data) return;
+    const rowsById = new Map(state.data.rows.map(r => [String(r.r), r]));
+    for (const tr of tbl.tBodies[0].rows) {
+      const row = rowsById.get(tr.dataset.row); if (!row) continue;
+      let show = true;
+      if (hide && row.empty) show = false;
+      if (show && q) show = Object.values(row.cells).some(c => String(c.d ?? '').toLowerCase().includes(q));
+      tr.classList.toggle('hidden', !show);
+    }
+  }
+  $('#q').addEventListener('input', applyFilter);
+  $('#hideEmpty').addEventListener('change', () => { applyFilter(); try { localStorage.setItem('fundplan.hideEmpty', $('#hideEmpty').checked ? '1' : ''); } catch (_) {} });
+  $('#threshold').addEventListener('change', () => { state.threshold = Number($('#threshold').value) || 0; try { localStorage.setItem('fundplan.threshold', String(state.threshold)); } catch (_) {} if (state.data) { updateComputed(state.data); renderKpis(state.data, roles(state.data.columns)); } });
+
+  // ---------- 編輯 ----------
+  async function commit(inp) {
+    const row = Number(inp.dataset.row), col = inp.dataset.col, value = inp.value;
+    if (value === inp.dataset.orig) return;
+    const tr = inp.closest('tr'); tr.classList.add('dirty'); inp.closest('td').classList.remove('errcell');
+    try {
+      const r = await api('/api/cell', {sheet: state.current, row, col, value});
+      inp.dataset.orig = r.display ?? value;
+      if (r.changed) { inp.value = r.display ?? ''; }
+      state.data = r.sheet_data; updateComputed(state.data); renderKpis(state.data, roles(state.data.columns)); applyFilter();
+      renderStatus(r.status);
+      tr.classList.remove('dirty'); tr.classList.remove('saved-flash'); void tr.offsetWidth; tr.classList.add('saved-flash');
+    } catch (e) {
+      tr.classList.remove('dirty'); inp.closest('td').classList.add('errcell');
+      toast(e.message, 4000); if (e.status) renderStatus(e.status);
+      inp.focus();
+    }
+  }
+  function onKey(e) {
+    const inp = e.target; if (!inp.matches('input[data-col]')) return;
+    if (e.key === 'Escape') { inp.value = inp.dataset.orig ?? ''; inp.blur(); e.preventDefault(); return; }
+    if (e.key === 'Enter' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && inp.selectionStart !== inp.selectionEnd) return;
+      e.preventDefault();
+      const dir = e.key === 'ArrowUp' ? -1 : 1;
+      let tr = inp.closest('tr');
+      do { tr = dir > 0 ? tr.nextElementSibling : tr.previousElementSibling; } while (tr && tr.classList.contains('hidden'));
+      if (inp.value !== inp.dataset.orig) commit(inp);
+      const next = tr && tr.querySelector(`input[data-col="${inp.dataset.col}"]`);
+      if (next) { next.focus(); next.select(); }
+      else if (dir > 0 && e.key === 'Enter') addRow(inp.dataset.col);
+    }
+  }
+  async function addRow(focusCol) {
+    try {
+      const r = await api('/api/row/add', {sheet: state.current});
+      state.data = r.sheet_data; renderStatus(r.status);
+      const cols = state.data.columns; const first = cols.find(c => c.editable && c.kind === 'date') || cols.find(c => c.editable);
+      state.pendingFocus = {row: r.row, col: focusCol || first.letter};
+      buildTable(state.data); toast(`已在表格尾端新增第 ${r.row} 列`);
+      const el = $('#tablewrap'); el.scrollTop = el.scrollHeight;
+    } catch (e) { toast(e.message, 4000); }
+  }
+  async function clearRow(row) {
+    if (!confirm(`清空第 ${row} 列的可編輯欄位？（列與公式會保留，異動會記錄）`)) return;
+    try { const r = await api('/api/row/clear', {sheet: state.current, row}); state.data = r.sheet_data; updateComputed(state.data); renderKpis(state.data, roles(state.data.columns)); applyFilter(); renderStatus(r.status); toast(`已清空第 ${row} 列（${r.cleared} 格）`); }
+    catch (e) { toast(e.message, 4000); }
+  }
+  $('#btnAddRow').onclick = () => addRow();
+  $('#btnSave').onclick = async () => { try { const r = await api('/api/save', {}); renderStatus(r.status); toast('已寫回 ' + r.path); } catch (e) { toast(e.message, 5000); if (e.status) renderStatus(e.status); } };
+  async function reload(discard) {
+    if (state.status?.dirty && !discard && !confirm('尚有未寫回的變動，重新載入會放棄它們。確定？')) return;
+    toast('重新載入中…（大檔可能要幾分鐘）', 8000);
+    try { const r = await api('/api/reload', {discard: true}); state.sheets = r.sheets; renderStatus(r.status); renderTabs(); await loadSheet(state.sheets.includes(state.current) ? state.current : state.sheets[0]); toast(`已重新載入（${r.seconds} 秒）`); }
+    catch (e) { toast(e.message, 5000); }
+  }
+  $('#btnReload').onclick = () => reload(false);
+
+  // ---------- 異動紀錄 ----------
+  async function showLog() {
+    $('#drawer').classList.add('open');
+    const r = await api('/api/log?limit=300');
+    const b = $('#logbody');
+    if (!r.changes.length) { b.innerHTML = '<p>本次啟動以來尚無異動。工作簿內的「異動紀錄」分頁保有完整歷程。</p>'; return; }
+    b.innerHTML = '<table><thead><tr><th>時間</th><th>分頁</th><th>列/欄</th><th>欄位</th><th>原值</th><th>新值</th></tr></thead><tbody>' +
+      r.changes.map(c => `<tr><td>${esc(c.time.slice(5).replace('T',' '))}</td><td>${esc(c.sheet)}</td><td>${c.row}${esc(c.col)}</td><td>${esc(c.title)}</td><td class="old">${esc(c.old)}</td><td class="new">${esc(c.new)}</td></tr>`).join('') + '</tbody></table>';
+  }
+  $('#btnLog').onclick = showLog; $('#btnLogRefresh').onclick = showLog; $('#btnLogClose').onclick = () => $('#drawer').classList.remove('open');
+
+  // ---------- 啟動 ----------
+  (async () => {
+    try { $('#hideEmpty').checked = localStorage.getItem('fundplan.hideEmpty') === '1'; state.threshold = Number(localStorage.getItem('fundplan.threshold') || 0); $('#threshold').value = state.threshold; } catch (_) {}
+    try {
+      const wb = await api('/api/workbook'); state.sheets = wb.sheets; renderStatus(wb);
+      let want = null; try { want = localStorage.getItem('fundplan.sheet'); } catch (_) {}
+      const now = new Date(); const guess = `${now.getFullYear()}(${now.getMonth() + 1})`;
+      const first = state.sheets.includes(want) ? want : (state.sheets.includes(guess) ? guess : state.sheets[0]);
+      if (first) await loadSheet(first); else $('#tablewrap').innerHTML = '<div class="empty-state">工作簿內沒有偵測到月資金計劃表分頁</div>';
+    } catch (e) { $('#fileinfo').textContent = '無法連線到伺服器：' + e.message; }
+  })();
+})();
+</script>
+</body>
+</html>

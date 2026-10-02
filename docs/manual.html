@@ -186,6 +186,7 @@
       <a href="#s5">四類人工覆核</a>
       <a href="#s6">名稱差異建檔</a>
       <a href="#s7">驗證與維護</a>
+      <a href="#s8">月資金計劃表線上表單</a>
     </ol>
   </nav>
 
@@ -468,6 +469,52 @@
 <span class="d">output/</span>                    <span class="cm"># 產出（不進版控）</span></div>
 
     <div class="callout"><p><strong>維護鐵則：</strong>改完任何規則，務必重跑 <code>verify_against_golden.py</code>，確認固定規則維持 100% 相符再交付。</p></div>
+  </section>
+
+
+  <!-- 8 -->
+  <section id="s8">
+    <h2><span class="n">8</span> 月資金計劃表 線上表單</h2>
+    <p class="sub">把資料夾裡實際存在的 <span class="fname">月資金計劃表.xlsx</span> 變成瀏覽器表單：檢視、編輯、互動，每一格的變動即時寫回同一個原檔。</p>
+
+    <h3>啟動</h3>
+    <div class="cmd">
+      <div class="hd"><span class="t">指定原檔路徑啟動（會直接寫回這個檔）</span></div>
+      <div class="bd">
+        <pre>python3 src/fund_plan_server.py "C:/Users/berti/OneDrive/文件/Claude/Projects/月資金計劃表.xlsx" --open</pre>
+        <p style="margin:0;font-size:14px;color:var(--ink-soft)">Windows 可把 xlsx 拖到 <code>啟動資金計劃表.bat</code>；或把路徑寫進 <code>fund_plan.config.json</code> 後雙擊。巨大工作簿載入需 2–5 分鐘，看到「載入完成」再開 <code>http://localhost:8765/</code>。</p>
+      </div>
+    </div>
+
+    <h3>畫面與互動</h3>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>區塊</th><th>內容</th></tr></thead>
+        <tbody>
+          <tr><td class="col-field">頂欄</td><td>檔名／路徑、同步狀態（已同步／待寫回／寫入中／衝突）、立即寫回、重新載入、異動紀錄</td></tr>
+          <tr><td class="col-field">月份分頁</td><td>工作簿內所有 <code>2026(N)</code> 分頁，預設開當月；<code>YYYYMMDD</code> 版本分頁不列入</td></tr>
+          <tr><td class="col-field">KPI</td><td>支出合計、收入合計、月底目前現金、最低現金點、低於警戒線的天數</td></tr>
+          <tr><td class="col-field">表格</td><td>白底格直接輸入，<kbd>Enter</kbd> 往下、<kbd>Tab</kbd> 往右、<kbd>Esc</kbd> 還原；灰底 <em>ƒ</em> 欄（實際應付／應付餘額／目前現金）為公式、唯讀、即時重算；現金為負紅底、低於警戒線琥珀底</td></tr>
+          <tr><td class="col-field">工具列</td><td>關鍵字篩選、隱藏空白列、現金警戒線、新增一列（延伸表格並複製公式）、清空列（不刪列）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>寫回原檔的安全機制</h3>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>情境</th><th>行為</th></tr></thead>
+        <tbody>
+          <tr><td class="col-field">每次編輯</td><td>離開格子 1 秒內寫回原檔（同檔名、同路徑），並登錄到工作簿「異動紀錄」分頁（時間／分頁／列欄／原值／新值）</td></tr>
+          <tr><td class="col-field">首次寫回</td><td>先在原檔同層 <code>備份/</code> 留一份 <span class="fname">月資金計劃表_YYYYMMDD_HHMMSS.xlsx</span></td></tr>
+          <tr><td class="col-field">原檔被 Excel 開啟</td><td>寫不進去時變動留在記憶體、每 5 秒重試；關閉 Excel 即補寫</td></tr>
+          <tr><td class="col-field">原檔被外部另存</td><td>停止覆寫、亮紅色橫幅，由你選「放棄線上變動重新載入」或「以線上內容覆寫」</td></tr>
+          <tr><td class="col-field">公式</td><td>只顯示、不改寫；存檔時要求 Excel 開檔全量重算，正式數字以 Excel 為準</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout"><p><strong>試用：</strong><code>python3 tests/make_fund_plan_sample.py</code> 產生同構範例，再以 <code>python3 src/fund_plan_server.py data/月資金計劃表_範例.xlsx --open</code> 啟動；<code>python3 -m unittest tests/test_fund_plan.py</code> 跑 17 項測試。</p></div>
   </section>
 
   <footer>
